@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-lato: "Lato", "Nunito", sans-serif;
+  --font-brand: "Montserrat", "Lato", sans-serif;
+
+  --color-brand-900: #2a1259;
+  --color-brand: #3a1b78;
+  --color-brand-700: #4b2a94;
+  --color-violet: #a18bef;
+  --color-lilac: #cfc3ff;
+  --color-lilac-50: #f8f6ff;
+  --color-lilac-100: #ede8ff;
+  --color-lilac-200: #e3dcff;
+  --color-lilac-300: #d9d0ff;
+  --color-page: #f6f7fb;
+  --color-ink: #020a0c;
+  --color-muted: #757d8e;
+  --color-sky: #1c79c0;
+  --color-orange: #fe830c;
+  --color-sun: #fbb81c;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-page text-ink font-sans antialiased; }
+h1, h2, h3 { font-family: var(--font-lato); }
+
+@layer components {
+.container-x { @apply mx-auto w-full max-w-[1320px] px-4 sm:px-6 lg:px-8; }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+.btn-soft {
+  @apply disabled:pointer-events-none disabled:opacity-40 inline-flex items-center justify-center gap-1.5 rounded-xl bg-lilac px-4 py-2.5 text-sm font-bold text-brand transition hover:bg-violet hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet;
+}
+.btn-primary {
+  @apply disabled:pointer-events-none disabled:opacity-50 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet;
+}
+.card { @apply rounded-2xl bg-white shadow-[0_2px_14px_rgba(58,27,120,0.06)]; }
+.input {
+  @apply w-full rounded-xl border border-lilac-200 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-muted focus:border-violet focus:ring-2 focus:ring-lilac-200;
+}
+}
+
+@keyframes floaty { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+.floaty { animation: floaty 6s ease-in-out infinite; }
+.floaty-slow { animation: floaty 9s ease-in-out infinite; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: none; } }
+.fade-up { animation: fadeUp .6s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .floaty, .floaty-slow, .fade-up, .animate-ping { animation: none !important; }
+  html { scroll-behavior: auto; }
+}
