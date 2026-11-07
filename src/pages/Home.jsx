@@ -89,7 +89,7 @@ function Hero({ tab, setTab }) {
           <img
             src="/images/hero-close.webp"
             alt={tr('O‘quvchilar kengashi a’zolari', 'Члены Совета учащихся')}
-            width="1190"
+            width="1115"
             height="660"
             fetchPriority="high"
             className="fade-up relative mx-auto h-auto w-full max-w-[820px] sm:w-[92%]"
