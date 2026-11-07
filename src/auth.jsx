@@ -84,7 +84,12 @@ export function authError(err, tr) {
   if (m.includes('email not confirmed')) return tr('E-mail hali tasdiqlanmagan. Pochtangizdagi havolani bosing.', 'E-mail ещё не подтверждён. Перейдите по ссылке из письма.')
   if (m.includes('already registered') || m.includes('already been registered')) return tr('Bu e-mail bilan allaqachon ro‘yxatdan o‘tilgan.', 'Этот e-mail уже зарегистрирован.')
   if (m.includes('password should be') || m.includes('weak')) return tr('Parol juda oddiy: kamida 8 belgi, harf va raqam ishlating.', 'Слишком простой пароль: минимум 8 символов, буквы и цифры.')
-  if (m.includes('rate limit') || m.includes('too many') || m.includes('security purposes')) return tr('Juda ko‘p urinish. Birozdan keyin qayta urinib ko‘ring.', 'Слишком много попыток. Попробуйте чуть позже.')
+  if (m.includes('security purposes')) {
+    const sec = (m.match(/(\d+)\s*second/) || [])[1]
+    return tr(`Xavfsizlik uchun ${sec ? sec + ' soniyadan' : 'birozdan'} keyin qayta urinib ko‘ring.`, `В целях безопасности повторите через ${sec ? sec + ' сек.' : 'некоторое время'}.`)
+  }
+  if (m.includes('email rate limit')) return tr('Bir soatlik xat yuborish limiti tugadi (Supabase bepul pochtasi). Birozdan keyin urinib ko‘ring yoki administratorga murojaat qiling.', 'Исчерпан почасовой лимит отправки писем. Попробуйте позже или обратитесь к администратору.')
+  if (m.includes('rate limit') || m.includes('too many')) return tr('Juda ko‘p urinish. Birozdan keyin qayta urinib ko‘ring.', 'Слишком много попыток. Попробуйте чуть позже.')
   if (m.includes('same') && m.includes('password')) return tr('Yangi parol eskisidan farq qilishi kerak.', 'Новый пароль должен отличаться от старого.')
   if (m.includes('fetch') || m.includes('network')) return tr('Internet aloqasini tekshiring.', 'Проверьте подключение к интернету.')
   return tr('Xatolik yuz berdi. Qayta urinib ko‘ring.', 'Произошла ошибка. Попробуйте ещё раз.') + (err?.message ? ` (${err.message})` : '')
