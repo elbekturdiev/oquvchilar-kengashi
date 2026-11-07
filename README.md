@@ -37,4 +37,10 @@ Interfeys matnlari (`src/i18n.jsx`) o‘zbek va rus tillarida. Yangilik va to‘
 ## Sahifalar
 `/` bosh sahifa · `/news` · `/news/:id` · `/clubs` · `/clubs/:id` · `/schedule` · `/centers` · `/leadership` · `/contacts` · `/student-council` · `/school-counselors` · `/portfolio` · `/login`
 
-Ariza qoldirish va kirish formalari hozircha backend’ga ulanmagan: ular faqat tasdiq xabarini ko‘rsatadi.
+## Kirish tizimi (Supabase)
+
+- Ro‘yxatdan o‘tish, kirish, parolni tiklash (`/reset-password`), shaxsiy kabinet (`/cabinet`): profil, arizalarim, parolni o‘zgartirish.
+- “Ariza qoldirish” formasi arizalarni `applications` jadvaliga yozadi. Admin kabinetida barcha arizalarni ko‘rish, holatini o‘zgartirish va CSV’ga yuklab olish mumkin.
+- Baza sxemasi: `supabase/schema.sql` (Supabase → SQL Editor’da bir marta ishga tushiriladi).
+- Ulanish sozlamalari: `src/lib/supabase.js` (yoki Vercel’da `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+- O‘zingizni admin qilish uchun SQL fayl oxiridagi buyruqni ishlating.

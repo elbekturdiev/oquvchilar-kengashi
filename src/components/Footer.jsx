@@ -56,7 +56,7 @@ function Skyline() {
 }
 
 export default function Footer() {
-  const { t, L } = useLang()
+  const { t, L, tr } = useLang()
   const year = new Date().getFullYear()
   return (
     <footer className="relative mt-20 overflow-hidden bg-brand text-white">
@@ -67,7 +67,7 @@ export default function Footer() {
             <img src="/images/logo-white.webp" alt={`${t('brandTop')} ${t('brandName')}`} width="674" height="454" className="h-auto w-48" />
           </Link>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/70">
-            “Tengdosh-tengdoshga” tamoyili asosida o‘quvchilarni qo‘shimcha ta’limga jalb etuvchi tizim.
+            {tr('“Tengdosh-tengdoshga” tamoyili asosida o‘quvchilarni qo‘shimcha ta’limga jalb etuvchi tizim.', 'Система вовлечения учащихся в дополнительное образование по принципу «равный — равному».')}
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export default function Footer() {
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" /> {L(SITE.address)}
             </li>
             <li className="flex items-center gap-2 px-1 text-white/70">
-              <Clock className="h-4 w-4" /> Du–Sh: {SITE.workHours}
+              <Clock className="h-4 w-4" /> {tr('Du–Sh', 'Пн–Сб')}: {SITE.workHours}
             </li>
           </ul>
           <div className="mt-5 flex gap-2">
@@ -123,7 +123,7 @@ export default function Footer() {
       <div className="relative border-t border-white/10">
         <div className="container-x flex flex-col items-center justify-between gap-2 py-5 text-sm text-white/70 sm:flex-row">
           <p>
-            © {year} {t('brandTop')} {t('brandName')}. {t('rights')}
+            © {year} {tr('Andijon viloyati O‘quvchilar kengashi', 'Совет учащихся Андижанской области')}. {t('rights')}
           </p>
         </div>
       </div>

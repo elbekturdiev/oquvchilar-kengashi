@@ -5,15 +5,12 @@ export const SITE = {
   phoneHref: 'tel:+998740000000',
   email: 'info@andijon-kengash.uz',
   address: {
-    uz: '170100, O‘zbekiston, Andijon shahri, Bobur shoh ko‘chasi, 1-uy',
-    ru: '170100, Узбекистан, г. Андижан, ул. Бобур шох, дом 1',
+    uz: '170100, O‘zbekiston, Andijon shahri, Amir Umarxon ko‘chasi, 23',
+    ru: '170100, Узбекистан, г. Андижан, ул. Амира Умархона, 23',
   },
+  // Xarita uchun manzil so'rovi (Google Maps o'zi topadi)
+  mapQuery: 'Amir Umarxon ko‘chasi 23, Andijon, Uzbekistan',
   workHours: '09:00 – 18:00',
-  // Xarita: Andijon shahri markazi (OpenStreetMap)
-  map: {
-    lat: 40.7821,
-    lng: 72.3442,
-  },
   socials: {
     instagram: 'https://instagram.com/',
     telegram: 'https://t.me/',
@@ -22,11 +19,11 @@ export const SITE = {
   },
 }
 
-export const mapEmbed = (lat = SITE.map.lat, lng = SITE.map.lng, d = 0.02) =>
-  `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d}%2C${lat - d / 2}%2C${lng + d}%2C${lat + d / 2}&layer=mapnik&marker=${lat}%2C${lng}`
-
-export const mapLink = (lat = SITE.map.lat, lng = SITE.map.lng) =>
-  `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
+// Xarita: manzil matni yoki koordinata bo'yicha (kalitsiz Google Maps embed)
+const q = (lat, lng) => (lat != null && lng != null ? `${lat},${lng}` : SITE.mapQuery)
+export const mapEmbed = (lat, lng, zoom = 16) =>
+  `https://maps.google.com/maps?q=${encodeURIComponent(q(lat, lng))}&z=${zoom}&hl=uz&output=embed`
+export const mapLink = (lat, lng) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q(lat, lng))}`
 
 export const DISTRICTS = [
   { id: 'andijon-sh', uz: 'Andijon shahri', ru: 'г. Андижан', lat: 40.7821, lng: 72.3442 },

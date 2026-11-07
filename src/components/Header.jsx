@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { ChevronDown, LogIn, Menu, X, UserRound } from 'lucide-react'
 import { Logo } from './Brand.jsx'
 import { useLang } from '../i18n.jsx'
+import { useAuth } from '../auth.jsx'
 
 export const NAV = [
   { key: 'home', to: '/' },
@@ -170,7 +171,14 @@ function isActive(item, loc) {
 }
 
 export default function Header() {
-  const { t } = useLang()
+  const { t, tr } = useLang()
+  const { user, profile } = useAuth()
+  const initials = (profile?.full_name || user?.email || '?')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
   const loc = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [drawer, setDrawer] = useState(false)
@@ -196,7 +204,7 @@ export default function Header() {
       <div className="container-x flex h-[72px] items-center justify-between gap-4 lg:h-20">
         <Logo />
 
-        <nav className="hidden items-center xl:flex" aria-label="Asosiy menyu">
+        <nav className="hidden items-center xl:flex" aria-label={t('menu')}>
           {NAV.map((item) =>
             item.children ? (
               <Dropdown key={item.key} item={item} active={isActive(item, loc)} />
@@ -221,14 +229,25 @@ export default function Header() {
           <div className="hidden sm:block">
             <LangMenu />
           </div>
-          <Link
-            to="/login"
-            className="hidden h-11 w-11 items-center justify-center rounded-xl border border-lilac-200 text-brand transition hover:bg-brand hover:text-white sm:flex"
-            aria-label={t('login')}
-            title={t('login')}
-          >
-            <LogIn className="h-5 w-5" />
-          </Link>
+          {user ? (
+            <Link
+              to="/cabinet"
+              className="hidden h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand to-violet text-sm font-extrabold text-white transition hover:opacity-90 sm:flex"
+              aria-label={tr('Shaxsiy kabinet', 'Личный кабинет')}
+              title={tr('Shaxsiy kabinet', 'Личный кабинет')}
+            >
+              {initials}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden h-11 w-11 items-center justify-center rounded-xl border border-lilac-200 text-brand transition hover:bg-brand hover:text-white sm:flex"
+              aria-label={t('login')}
+              title={t('login')}
+            >
+              <LogIn className="h-5 w-5" />
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setDrawer(true)}
@@ -253,12 +272,12 @@ export default function Header() {
         >
           <div className="flex items-start justify-between gap-3">
             <Logo />
-            <button type="button" onClick={() => setDrawer(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lilac-50 text-brand" aria-label="Yopish">
+            <button type="button" onClick={() => setDrawer(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lilac-50 text-brand" aria-label={tr('Yopish', 'Закрыть')}>
               <X className="h-5 w-5" />
             </button>
           </div>
-          <Link to="/login" className="btn-primary mt-6 w-full">
-            <UserRound className="h-4 w-4" /> {t('login')}
+          <Link to={user ? '/cabinet' : '/login'} className="btn-primary mt-6 w-full">
+            <UserRound className="h-4 w-4" /> {user ? tr('Shaxsiy kabinet', 'Личный кабинет') : t('login')}
           </Link>
           <div className="mt-3">
             <LangSwitch full />

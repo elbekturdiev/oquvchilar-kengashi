@@ -54,9 +54,9 @@ export const Smile = ({ className }) => (
 export const Bubble = ({ className, text = ['Har kun', 'yangi', 'qadam'] }) => (
   <svg viewBox="0 0 90 90" className={className} aria-hidden="true">
     <path d="M14 10h60c8 0 12 4 12 12v34c0 8-4 12-12 12H34L14 84l4-16c-8 0-12-4-12-12V22c0-8 4-12 8-12Z" fill="#f04848" transform="rotate(-8 45 45)" />
-    <g fill="#fff" fontFamily="Nunito, sans-serif" fontSize="11" fontWeight="700" transform="rotate(-14 45 40)">
+    <g fill="#fff" fontFamily="Nunito, sans-serif" fontSize={text.some((l) => l.length > 7) ? 9.5 : 11} fontWeight="700" transform="rotate(-14 45 40)">
       {text.map((l, i) => (
-        <text key={l} x="22" y={32 + i * 13}>
+        <text key={l} x="18" y={32 + i * 13}>
           {l}
         </text>
       ))}
@@ -90,7 +90,7 @@ export const Figure = ({ className, color = '#3a1b78', lines = [], prop = 'rocke
       {prop === 'brush' && <path d="M70 40 84 8M82 4l6 4-4 6" />}
       {prop === 'thumb' && <path d="M72 40v-8c0-4 6-4 6 0v6h6c3 0 4 3 3 5l-2 6c-1 2-3 3-5 3h-8Z" fill="#fff" />}
     </g>
-    <g fill={color} fontFamily="Montserrat, Lato, sans-serif" fontWeight="800" fontSize="13">
+    <g fill={color} fontFamily="Montserrat, Nunito, sans-serif" fontWeight="800" fontSize={lines.some((l) => l.length > 9) ? 11.5 : 13}>
       {lines.map((l, i) => (
         <text key={l} x={flip ? 2 : 88} y={62 + i * 15} textAnchor="start">
           {l}

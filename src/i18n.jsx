@@ -65,6 +65,11 @@ const dict = {
     views: 'ko‘rishlar',
     notFound: 'Sahifa topilmadi',
     toHome: 'Bosh sahifaga qaytish',
+    pages: 'Sahifalar',
+    breadcrumb: 'Sahifa yo‘li',
+    perMonth: 'oy',
+    found: 'Topildi',
+    clubsCount: 'ta to‘garak',
   },
   ru: {
     brandTop: 'Андижанская область',
@@ -130,6 +135,11 @@ const dict = {
     views: 'просмотров',
     notFound: 'Страница не найдена',
     toHome: 'Вернуться на главную',
+    pages: 'Страницы',
+    breadcrumb: 'Навигация',
+    perMonth: 'мес',
+    found: 'Найдено',
+    clubsCount: 'кружков',
   },
 }
 
@@ -154,7 +164,9 @@ export function LangProvider({ children }) {
   const t = (key) => dict[lang][key] ?? dict.uz[key] ?? key
   // pick a localized field: L({uz:'..', ru:'..'}) or plain string
   const L = (v) => (v && typeof v === 'object' ? v[lang] ?? v.uz : v)
-  return <LangCtx.Provider value={{ lang, setLang, t, L }}>{children}</LangCtx.Provider>
+  // inline tarjima: tr('O‘zbekcha matn', 'Русский текст')
+  const tr = (uz, ru) => (lang === 'ru' && ru !== undefined ? ru : uz)
+  return <LangCtx.Provider value={{ lang, setLang, t, L, tr }}>{children}</LangCtx.Provider>
 }
 
 export const useLang = () => useContext(LangCtx)

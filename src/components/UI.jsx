@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Home, SearchX, X, CheckCircle2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Home, SearchX, X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { useLang } from '../i18n.jsx'
+import { useAuth } from '../auth.jsx'
+import { supabase } from '../lib/supabase.js'
 
 export function usePageTitle(title) {
   const { t } = useLang()
@@ -30,7 +32,7 @@ export function PageBanner({ title, icon: Icon, crumbs = [], photo = '/images/gi
       ))}
       <div className="relative container-x flex min-h-[150px] items-center justify-between gap-6 py-8 md:min-h-[190px]">
         <div className="min-w-0">
-          <nav aria-label="breadcrumb" className="flex flex-wrap items-center gap-1.5 text-sm text-white/80">
+          <nav aria-label={t('breadcrumb')} className="flex flex-wrap items-center gap-1.5 text-sm text-white/80">
             <Link to="/" className="flex items-center gap-1 transition hover:text-white" aria-label={t('home')}>
               <Home className="h-4 w-4 text-sky-300" />
             </Link>
@@ -87,6 +89,7 @@ export function SectionHeader({ title, to, eyebrow, children }) {
 
 // Gorizontal karusel: strelkalar, sichqoncha/barmoq bilan surish, chekkada xiralashish
 export function Carousel({ children, label }) {
+  const { t } = useLang()
   const ref = useRef(null)
   const [edge, setEdge] = useState({ start: true, end: false })
   const update = () => {
@@ -109,7 +112,7 @@ export function Carousel({ children, label }) {
     'absolute top-1/2 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-brand shadow-lg shadow-brand/15 ring-1 ring-lilac-100 transition hover:bg-brand hover:text-white disabled:pointer-events-none disabled:opacity-0 sm:flex'
   return (
     <div className="relative" role="region" aria-label={label}>
-      <button type="button" className={`${btn} -left-3`} onClick={() => go(-1)} disabled={edge.start} aria-label="Oldingi">
+      <button type="button" className={`${btn} -left-3`} onClick={() => go(-1)} disabled={edge.start} aria-label={t('prev')}>
         <ChevronLeft className="h-5 w-5" />
       </button>
       <div
@@ -119,7 +122,7 @@ export function Carousel({ children, label }) {
       >
         {children}
       </div>
-      <button type="button" className={`${btn} -right-3`} onClick={() => go(1)} disabled={edge.end} aria-label="Keyingi">
+      <button type="button" className={`${btn} -right-3`} onClick={() => go(1)} disabled={edge.end} aria-label={t('next')}>
         <ChevronRight className="h-5 w-5" />
       </button>
       <div className={`pointer-events-none absolute top-0 right-0 bottom-3 hidden w-16 bg-gradient-to-l from-page to-transparent transition-opacity sm:block ${edge.end ? 'opacity-0' : 'opacity-100'}`} />
@@ -144,7 +147,7 @@ export function Pagination({ page, pages, onChange }) {
   const { t } = useLang()
   if (pages <= 1) return null
   return (
-    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label="Sahifalar">
+    <nav className="mt-8 flex items-center justify-center gap-1.5" aria-label={t('pages')}>
       <button type="button" className="btn-soft !px-3" disabled={page === 1} onClick={() => onChange(page - 1)} aria-label={t('prev')}>
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -167,6 +170,7 @@ export function Pagination({ page, pages, onChange }) {
 }
 
 export function Modal({ open, onClose, title, children }) {
+  const { tr } = useLang()
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -184,7 +188,7 @@ export function Modal({ open, onClose, title, children }) {
       <div className="fade-up relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl">
         <div className="mb-4 flex items-start justify-between gap-4">
           <h3 className="font-lato text-xl font-bold">{title}</h3>
-          <button type="button" onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lilac-50 text-brand" aria-label="Yopish">
+          <button type="button" onClick={onClose} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lilac-50 text-brand" aria-label={tr('Yopish', 'Закрыть')}>
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -194,59 +198,116 @@ export function Modal({ open, onClose, title, children }) {
   )
 }
 
-// To'garakka ariza formasi (backend ulanmaguncha — namuna: ma'lumot faqat tasdiq xabarini ko'rsatadi)
+// To'garakka ariza formasi — Supabase'dagi `applications` jadvaliga yoziladi
 export function ApplyModal({ club, onClose }) {
-  const { t } = useLang()
+  const { t, tr, L } = useLang()
+  const auth = useAuth()
   const [sent, setSent] = useState(false)
-  useEffect(() => setSent(false), [club])
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const p = auth.profile
+  const prefill = p && p.role === 'student'
+  const [f, setF] = useState({ student_name: '', grade: '', phone: '', school: '' })
+  useEffect(() => {
+    setSent(false)
+    setErr('')
+    setF({
+      student_name: prefill ? p.full_name || '' : '',
+      grade: prefill ? p.grade || '' : '',
+      phone: p?.phone || '',
+      school: prefill ? p.school || '' : '',
+    })
+  }, [club, prefill, p])
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
+  const submit = async (e) => {
+    e.preventDefault()
+    setErr('')
+    if (!supabase) return setErr(tr('Ariza qabul qilish tizimi hali sozlanmagan. Telefon orqali bog‘laning.', 'Приём заявок ещё не настроен. Свяжитесь по телефону.'))
+    setBusy(true)
+    const { error } = await supabase.from('applications').insert({
+      user_id: auth.user?.id ?? null,
+      club_id: club.id,
+      club_name: L(club.name),
+      org: L(club.org),
+      student_name: f.student_name.trim(),
+      grade: f.grade,
+      phone: f.phone.trim(),
+      school: f.school.trim(),
+    })
+    setBusy(false)
+    if (error) setErr(tr('Arizani yuborib bo‘lmadi. Qayta urinib ko‘ring.', 'Не удалось отправить заявку. Попробуйте ещё раз.'))
+    else setSent(true)
+  }
   return (
-    <Modal open={!!club} onClose={onClose} title={`${t('apply')}: ${club?.name ?? ''}`}>
+    <Modal open={!!club} onClose={onClose} title={`${t('apply')}: ${club ? L(club.name) : ''}`}>
       {sent ? (
         <div className="py-6 text-center">
           <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-500" />
-          <p className="mt-3 font-lato text-lg font-bold">Arizangiz qabul qilindi!</p>
-          <p className="mt-1 text-sm text-muted">Tez orada to‘garak rahbari siz bilan bog‘lanadi.</p>
-          <button type="button" className="btn-primary mt-6" onClick={onClose}>
-            Yopish
+          <p className="mt-3 font-lato text-lg font-bold">{tr('Arizangiz qabul qilindi!', 'Заявка принята!')}</p>
+          <p className="mt-1 text-sm text-muted">{tr('Tez orada to‘garak rahbari siz bilan bog‘lanadi.', 'Руководитель кружка скоро свяжется с вами.')}</p>
+          {auth.user ? (
+            <Link to="/cabinet?tab=applications" className="btn-primary mt-6" onClick={onClose}>
+              {tr('Arizalarimni ko‘rish', 'Мои заявки')}
+            </Link>
+          ) : (
+            <p className="mt-4 text-xs text-muted">
+              {tr('Ariza holatini kuzatish uchun', 'Чтобы следить за статусом заявки,')}{' '}
+              <Link to="/register" className="font-bold text-brand underline" onClick={onClose}>
+                {tr('ro‘yxatdan o‘ting', 'зарегистрируйтесь')}
+              </Link>
+              .
+            </p>
+          )}
+          <button type="button" className="btn-soft mt-3" onClick={onClose}>
+            {tr('Yopish', 'Закрыть')}
           </button>
         </div>
       ) : (
-        <form
-          className="space-y-3"
-          onSubmit={(e) => {
-            e.preventDefault()
-            setSent(true)
-          }}
-        >
-          <p className="rounded-xl bg-lilac-50 px-3.5 py-2.5 text-sm text-brand">{club?.org}</p>
+        <form className="space-y-3" onSubmit={submit}>
+          <p className="rounded-xl bg-lilac-50 px-3.5 py-2.5 text-sm text-brand">{club && L(club.org)}</p>
           <label className="block text-sm font-semibold">
-            O‘quvchining F.I.Sh.
-            <input required className="input mt-1" placeholder="Ism Familiya" />
+            {tr('O‘quvchining F.I.Sh.', 'Ф.И.О. учащегося')}
+            <input required minLength={2} maxLength={120} value={f.student_name} onChange={set('student_name')} className="input mt-1" placeholder={tr('Ism Familiya', 'Имя Фамилия')} />
           </label>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-semibold">
-              Sinfi
-              <select required className="input mt-1" defaultValue="">
+              {tr('Sinfi', 'Класс')}
+              <select required className="input mt-1" value={f.grade} onChange={set('grade')}>
                 <option value="" disabled>
-                  Tanlang
+                  {tr('Tanlang', 'Выберите')}
                 </option>
                 {Array.from({ length: 11 }, (_, i) => (
-                  <option key={i}>{i + 1}-sinf</option>
+                  <option key={i} value={String(i + 1)}>
+                    {i + 1}-{tr('sinf', 'класс')}
+                  </option>
                 ))}
               </select>
             </label>
             <label className="block text-sm font-semibold">
-              Telefon raqam
-              <input required type="tel" inputMode="tel" pattern="[0-9+()\s-]{9,}" className="input mt-1" placeholder="+998 __ ___ __ __" />
+              {t('phone')}
+              <input required type="tel" inputMode="tel" pattern="[0-9+()\s-]{9,30}" value={f.phone} onChange={set('phone')} className="input mt-1" placeholder="+998 __ ___ __ __" />
             </label>
           </div>
           <label className="block text-sm font-semibold">
-            Maktabi
-            <input className="input mt-1" placeholder="Masalan: 12-son maktab" />
+            {tr('Maktabi', 'Школа')}
+            <input className="input mt-1" value={f.school} onChange={set('school')} placeholder={tr('Masalan: 12-son maktab', 'Например: школа №12')} />
           </label>
-          <button type="submit" className="btn-primary w-full !py-3">
-            Yuborish
+          {err && (
+            <p role="alert" className="flex gap-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-700">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> {err}
+            </p>
+          )}
+          <button type="submit" disabled={busy} className="btn-primary w-full !py-3">
+            {busy && <Loader2 className="h-4 w-4 animate-spin" />} {tr('Yuborish', 'Отправить')}
           </button>
+          {!auth.user && (
+            <p className="text-center text-xs text-muted">
+              <Link to="/login" className="font-bold text-brand underline" onClick={onClose}>
+                {t('login')}
+              </Link>{' '}
+              — {tr('ma’lumotlaringiz avtomatik to‘ldiriladi', 'данные заполнятся автоматически')}
+            </p>
+          )}
         </form>
       )}
     </Modal>

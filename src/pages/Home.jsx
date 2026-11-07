@@ -53,22 +53,22 @@ function HeroTabs({ tab, setTab }) {
 }
 
 function Hero({ tab, setTab }) {
-  const { t } = useLang()
+  const { t, tr, lang } = useLang()
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-white to-page">
       {/* bezaklar — kompyuterda to'liq, mobilda kichik va kamroq */}
       <div className="pointer-events-none absolute inset-0 z-0 mx-auto max-w-[1480px]" aria-hidden="true">
         <Lightning className="floaty absolute top-4 left-[3%] w-8 sm:top-10 sm:left-[6%] sm:w-12 lg:w-14" />
-        <Figure className="floaty-slow absolute top-[20%] left-[2%] hidden w-40 lg:block xl:left-[4%]" color="#f04848" prop="brush" lines={['#Kelajak', 'o‘z', 'qo‘limizda']} />
+        <Figure className="floaty-slow absolute top-[20%] left-[2%] hidden w-40 lg:block xl:left-[4%]" color="#f04848" prop="brush" lines={lang === 'ru' ? ['#Будущее', 'в наших', 'руках'] : ['#Kelajak', 'o‘z', 'qo‘limizda']} />
         <Smile className="floaty absolute top-[48%] left-[2%] w-7 sm:top-[44%] sm:left-[7%] sm:w-11 lg:left-[15%]" />
         <Squiggle className="absolute top-[36%] left-[19%] hidden w-36 2xl:block" />
-        <Figure className="floaty-slow absolute bottom-[16%] left-[2%] hidden w-44 md:block xl:left-[5%]" color="#3a1b78" prop="rocket" lines={['YANGI', 'MARRALAR', 'SARI']} />
+        <Figure className="floaty-slow absolute bottom-[16%] left-[2%] hidden w-44 md:block xl:left-[5%]" color="#3a1b78" prop="rocket" lines={lang === 'ru' ? ['К НОВЫМ', 'РУБЕЖАМ'] : ['YANGI', 'MARRALAR', 'SARI']} />
         <Arrows className="absolute top-[30%] right-[17%] hidden w-24 2xl:block" />
         <Burst className="absolute top-[28%] left-[20%] hidden w-16 2xl:block" />
-        <Figure className="floaty absolute top-4 right-[2%] hidden w-44 md:block xl:right-[4%]" color="#6cb520" prop="thumb" flip lines={['BILIM SARI', 'YUKSALISH']} />
-        <Bubble className="floaty absolute top-[46%] right-[1%] w-10 sm:top-[40%] sm:right-[8%] sm:w-14 lg:right-[14%] lg:w-16" />
+        <Figure className="floaty absolute top-4 right-[2%] hidden w-44 md:block xl:right-[4%]" color="#6cb520" prop="thumb" flip lines={lang === 'ru' ? ['К ВЕРШИНАМ', 'ЗНАНИЙ'] : ['BILIM SARI', 'YUKSALISH']} />
+        <Bubble text={lang === 'ru' ? ['Каждый', 'день —', 'новый шаг'] : undefined} className="floaty absolute top-[46%] right-[1%] w-10 sm:top-[40%] sm:right-[8%] sm:w-14 lg:right-[14%] lg:w-16" />
         <Zigzag className="absolute top-[50%] right-[3%] hidden w-14 md:block lg:w-16" />
-        <Figure className="floaty-slow absolute right-[2%] bottom-[16%] hidden w-44 md:block xl:right-[5%]" color="#7c5cf0" prop="scope" flip lines={['YANGI', 'ORZULAR', 'SARI']} />
+        <Figure className="floaty-slow absolute right-[2%] bottom-[16%] hidden w-44 md:block xl:right-[5%]" color="#7c5cf0" prop="scope" flip lines={lang === 'ru' ? ['К НОВЫМ', 'МЕЧТАМ'] : ['YANGI', 'ORZULAR', 'SARI']} />
       </div>
 
       <div className="relative isolate z-10 container-x pt-6 sm:pt-10">
@@ -77,9 +77,9 @@ function Hero({ tab, setTab }) {
           {t('heroTitle')}
         </h1>
 
-        <div className="relative mx-auto mt-4 max-w-[860px] sm:mt-6">
+        <div className="relative mx-auto mt-3 max-w-[900px] sm:mt-5">
           {/* konsentrik doiralar — markazi rasm pastida, sarlavhaga tegmaydi */}
-          <div className="absolute bottom-0 left-1/2 -z-10 flex aspect-square w-[min(900px,125vw)] -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-lilac-50" aria-hidden="true">
+          <div className="absolute bottom-0 left-1/2 -z-10 flex aspect-square w-[min(1000px,135vw)] -translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-lilac-50" aria-hidden="true">
             <div className="flex h-[88%] w-[88%] items-center justify-center rounded-full bg-lilac-100">
               <div className="flex h-[86%] w-[86%] items-center justify-center rounded-full bg-lilac-200">
                 <div className="h-[84%] w-[84%] rounded-full bg-lilac-300" />
@@ -87,12 +87,12 @@ function Hero({ tab, setTab }) {
             </div>
           </div>
           <img
-            src="/images/hero.webp"
-            alt="O‘quvchilar kengashi a’zolari"
+            src="/images/hero-close.webp"
+            alt={tr('O‘quvchilar kengashi a’zolari', 'Члены Совета учащихся')}
             width="1190"
-            height="820"
+            height="660"
             fetchPriority="high"
-            className="fade-up relative mx-auto h-auto w-[88%] max-w-[640px] sm:w-[78%]"
+            className="fade-up relative mx-auto h-auto w-full max-w-[820px] sm:w-[92%]"
           />
         </div>
       </div>
@@ -103,7 +103,7 @@ function Hero({ tab, setTab }) {
 function Stats({ tab }) {
   const { t } = useLang()
   return (
-    <div className="relative z-10 container-x -mt-6 sm:-mt-16">
+    <div className="relative z-10 container-x -mt-8 sm:-mt-20">
       <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {HOME_STATS[tab].map((s) => (
           <div key={s.key} className="card fade-up p-4 sm:p-6">

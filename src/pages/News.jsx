@@ -20,7 +20,7 @@ export function NewsList() {
   const list = useMemo(() => {
     const s = q.trim().toLowerCase()
     return NEWS.filter((n) => {
-      if (s && !(n.title + ' ' + n.excerpt).toLowerCase().includes(s)) return false
+      if (s && !`${n.title.uz} ${n.title.ru} ${n.excerpt.uz} ${n.excerpt.ru}`.toLowerCase().includes(s)) return false
       if (applied.cat !== 'all' && n.category !== applied.cat) return false
       if (applied.from && n.date < applied.from) return false
       if (applied.to && n.date > applied.to) return false
@@ -123,7 +123,7 @@ export function NewsList() {
 
 export function NewsDetail() {
   const { id } = useParams()
-  const { t, L } = useLang()
+  const { t, L, tr } = useLang()
   const item = newsById(id)
   const [copied, setCopied] = useState(false)
   if (!item) return <NotFound />
@@ -132,7 +132,7 @@ export function NewsDetail() {
   const share = async () => {
     const url = window.location.href
     try {
-      if (navigator.share) await navigator.share({ title: item.title, url })
+      if (navigator.share) await navigator.share({ title: L(item.title), url })
       else {
         await navigator.clipboard.writeText(url)
         setCopied(true)
@@ -161,15 +161,15 @@ export function NewsDetail() {
               <Eye className="h-4 w-4 text-violet" /> {item.views} {t('views')}
             </span>
           </div>
-          <h2 className="mt-3 font-lato text-2xl leading-tight font-bold sm:text-3xl">{item.title}</h2>
-          <Cover image={item.image} tone={cat.tone} icon={cat.icon} iconSize="h-24 w-24" alt={item.title} className="mt-5 aspect-[16/9] rounded-2xl" />
+          <h2 className="mt-3 font-lato text-2xl leading-tight font-bold sm:text-3xl">{L(item.title)}</h2>
+          <Cover image={item.image} tone={cat.tone} icon={cat.icon} iconSize="h-24 w-24" alt={L(item.title)} className="mt-5 aspect-[16/9] rounded-2xl" />
           <div className="mt-6 space-y-4 text-[17px] leading-relaxed text-ink/85">
-            {item.body.map((p) => (
+            {L(item.body).map((p) => (
               <p key={p}>{p}</p>
             ))}
           </div>
           <button type="button" onClick={share} className="btn-soft mt-8">
-            <Share2 className="h-4 w-4" /> {copied ? 'Havola nusxalandi' : t('share')}
+            <Share2 className="h-4 w-4" /> {copied ? tr('Havola nusxalandi', 'Ссылка скопирована') : t('share')}
           </button>
         </article>
         <aside>
@@ -185,7 +185,7 @@ export function NewsDetail() {
                       <Link to={`/news/${n.id}`} className="group flex gap-3">
                         <Cover image={n.image} tone={c.tone} icon={c.icon} iconSize="h-7 w-7" className="h-16 w-20 shrink-0 rounded-xl" alt="" />
                         <span className="min-w-0">
-                          <span className="line-clamp-2 text-sm font-bold group-hover:text-brand-700">{n.title}</span>
+                          <span className="line-clamp-2 text-sm font-bold group-hover:text-brand-700">{L(n.title)}</span>
                           <span className="mt-1 block text-xs text-muted">{formatDate(n.date)}</span>
                         </span>
                       </Link>

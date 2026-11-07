@@ -7,7 +7,7 @@ import { useLang } from '../i18n.jsx'
 import { PageBanner, Empty, Pagination, ApplyModal } from '../components/UI.jsx'
 import { ClubRow, ClubCard } from '../components/Cards.jsx'
 import Cover from '../components/Cover.jsx'
-import { CLUBS, clubById, formatSum } from '../data/clubs.js'
+import { CLUBS, clubById, formatSum, WEEKDAYS } from '../data/clubs.js'
 import { DIRECTIONS, SPECIAL_DIRECTIONS, directionById } from '../data/directions.js'
 import { DISTRICTS, districtById, mapEmbed, mapLink } from '../data/site.js'
 import { CLUB_STATS, fmt } from '../data/stats.js'
@@ -42,7 +42,7 @@ export function KindTabs({ tab, onChange }) {
 const PER_PAGE = 6
 
 export function ClubsPage() {
-  const { t, L } = useLang()
+  const { t, L, tr } = useLang()
   const [params, setParams] = useSearchParams()
   const tab = params.get('tab') === 'special' ? 'special' : 'centers'
   const dir = params.get('dir') || 'all'
@@ -70,7 +70,7 @@ export function ClubsPage() {
         c.kind === tab &&
         (dir === 'all' || c.direction === dir) &&
         (tuman === 'all' || c.district === tuman) &&
-        (!s || (c.name + c.org + c.address).toLowerCase().includes(s)),
+        (!s || [c.name, c.org, c.address].flatMap((v) => [v.uz, v.ru]).join(' ').toLowerCase().includes(s)),
     )
   }, [tab, dir, tuman, q])
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE))
@@ -78,10 +78,10 @@ export function ClubsPage() {
   const shown = list.slice((cur - 1) * PER_PAGE, cur * PER_PAGE)
 
   const statCards = [
-    { label: 'Jami o‘quvchilar soni', value: stats.students, unit: 'nafar', icon: Users, c: 'bg-sky/10 text-sky' },
-    { label: 'Jami to‘garaklar soni', value: stats.clubs, unit: 'ta', icon: Blocks, c: 'bg-orange/10 text-orange' },
-    { label: 'To‘garak rahbarlari', value: stats.teachers, unit: 'nafar', icon: UserCheck, c: 'bg-violet/15 text-brand-700' },
-    { label: 'Oliy ma’lumotli', value: stats.higher, unit: 'nafar', icon: Award, c: 'bg-emerald-500/10 text-emerald-600', pct: Math.round((stats.higher / stats.teachers) * 100) },
+    { label: tr('Jami o‘quvchilar soni', 'Всего учащихся'), value: stats.students, unit: tr('nafar', 'чел.'), icon: Users, c: 'bg-sky/10 text-sky' },
+    { label: tr('Jami to‘garaklar soni', 'Всего кружков'), value: stats.clubs, unit: tr('ta', 'шт.'), icon: Blocks, c: 'bg-orange/10 text-orange' },
+    { label: tr('To‘garak rahbarlari', 'Руководители кружков'), value: stats.teachers, unit: tr('nafar', 'чел.'), icon: UserCheck, c: 'bg-violet/15 text-brand-700' },
+    { label: tr('Oliy ma’lumotli', 'С высшим образованием'), value: stats.higher, unit: tr('nafar', 'чел.'), icon: Award, c: 'bg-emerald-500/10 text-emerald-600', pct: Math.round((stats.higher / stats.teachers) * 100) },
   ]
 
   return (
@@ -108,8 +108,8 @@ export function ClubsPage() {
               </div>
             ))}
           </div>
-          <a href={mapLink()} target="_blank" rel="noreferrer" className="card group relative block min-h-[120px] overflow-hidden bg-[linear-gradient(135deg,#ede8ff,#cfc3ff)]">
-            <iframe title="Xarita" src={mapEmbed(undefined, undefined, 0.6)} className="pointer-events-none absolute inset-0 h-full w-full border-0 grayscale-[30%]" loading="lazy" tabIndex={-1} />
+          <a href="https://www.google.com/maps/search/?api=1&query=Andijon+viloyati" target="_blank" rel="noreferrer" className="card group relative block min-h-[120px] overflow-hidden bg-[linear-gradient(135deg,#ede8ff,#cfc3ff)]">
+            <iframe title={tr('Xarita', 'Карта')} src={mapEmbed(40.76, 72.35, 9)} className="pointer-events-none absolute inset-0 h-full w-full border-0 grayscale-[30%]" loading="lazy" tabIndex={-1} />
             <span className="absolute inset-x-4 bottom-4 inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-white shadow-lg transition group-hover:bg-brand-700">
               <MapPinned className="h-4 w-4" /> {t('onMap')}
             </span>
@@ -141,7 +141,7 @@ export function ClubsPage() {
                   </option>
                 ))}
               </select>
-              <div className="hidden gap-1 rounded-xl border border-lilac-200 bg-white p-1 sm:flex" role="group" aria-label="Ko‘rinish">
+              <div className="hidden gap-1 rounded-xl border border-lilac-200 bg-white p-1 sm:flex" role="group" aria-label={tr('Ko‘rinish', 'Вид')}>
                 {[
                   ['list', LayoutList],
                   ['grid', LayoutGrid],
@@ -153,7 +153,7 @@ export function ClubsPage() {
               </div>
             </div>
             <p className="mt-4 text-sm text-muted">
-              Topildi: <b className="text-ink">{list.length}</b> ta to‘garak
+              {t('found')}: <b className="text-ink">{list.length}</b> {t('clubsCount')}
             </p>
             <div className="mt-3">
               {!shown.length ? (
@@ -203,7 +203,7 @@ export function ClubsPage() {
 
 export function ClubDetail() {
   const { id } = useParams()
-  const { t, L } = useLang()
+  const { t, L, tr } = useLang()
   const club = clubById(id)
   const [applyFor, setApplyFor] = useState(null)
   if (!club) return <NotFound />
@@ -211,18 +211,18 @@ export function ClubDetail() {
   const dist = districtById(club.district)
   const free = Math.max(0, club.seats - club.enrolled)
   const info = [
-    [MapPin, t('address'), club.address],
+    [MapPin, t('address'), L(club.address)],
     [Phone, t('phone'), club.phone],
-    [CalendarDays, 'Dars kunlari', club.days.join(', ')],
-    [Clock, 'Dars vaqti', club.time],
-    [Baby, 'Yosh toifasi', club.age],
-    [UserRound, 'To‘garak rahbari', club.teacher],
-    [Wallet, 'Oylik to‘lov', `${formatSum(club.price)} ${t('sum')}`],
+    [CalendarDays, tr('Dars kunlari', 'Дни занятий'), club.days.map((d) => L(WEEKDAYS[d])).join(', ')],
+    [Clock, tr('Dars vaqti', 'Время занятий'), club.time],
+    [Baby, tr('Yosh toifasi', 'Возраст'), L(club.age)],
+    [UserRound, tr('To‘garak rahbari', 'Руководитель'), L(club.teacher)],
+    [Wallet, tr('Oylik to‘lov', 'Оплата в месяц'), `${formatSum(club.price)} ${t('sum')}`],
   ]
   const similar = CLUBS.filter((c) => c.direction === club.direction && c.id !== club.id).slice(0, 3)
   return (
     <>
-      <PageBanner title={club.name} icon={GraduationCap} crumbs={[{ label: t('clubs'), to: club.kind === 'special' ? '/clubs?tab=special' : '/clubs' }]} photo="/images/boy.webp" />
+      <PageBanner title={L(club.name)} icon={GraduationCap} crumbs={[{ label: t('clubs'), to: club.kind === 'special' ? '/clubs?tab=special' : '/clubs' }]} photo="/images/boy.webp" />
       <div className="container-x mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="min-w-0 space-y-6">
           <div className="card p-4 sm:p-6">
@@ -230,18 +230,18 @@ export function ClubDetail() {
               <ArrowLeft className="h-4 w-4" /> {t('back')}
             </Link>
             <div className="mt-4 grid gap-6 md:grid-cols-[280px_1fr]">
-              <Cover image={club.image} tone={dir.tone} icon={dir.icon} iconSize="h-20 w-20" alt={club.name} className="aspect-[4/3] rounded-2xl" />
+              <Cover image={club.image} tone={dir.tone} icon={dir.icon} iconSize="h-20 w-20" alt={L(club.name)} className="aspect-[4/3] rounded-2xl" />
               <div>
                 <span className="rounded-lg bg-lilac-100 px-2.5 py-1 text-xs font-bold text-brand">{L(dir)}</span>
-                <h2 className="mt-3 font-lato text-2xl font-bold sm:text-3xl">{club.name}</h2>
-                <p className="mt-2 text-sm font-semibold text-ink/70">{club.org}</p>
+                <h2 className="mt-3 font-lato text-2xl font-bold sm:text-3xl">{L(club.name)}</h2>
+                <p className="mt-2 text-sm font-semibold text-ink/70">{L(club.org)}</p>
                 <p className="mt-1 text-sm text-muted">{L(dist)}</p>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <span className="text-2xl font-extrabold text-violet">
                     {formatSum(club.price)} {t('sum')}
                   </span>
                   <span className={`rounded-lg px-2.5 py-1 text-xs font-bold ${free ? 'bg-emerald-500/15 text-emerald-700' : 'bg-red-500/10 text-red-600'}`}>
-                    {free ? `${free} ta bo‘sh o‘rin` : 'Bo‘sh o‘rin yo‘q'}
+                    {free ? tr(`${free} ta bo‘sh o‘rin`, `Свободных мест: ${free}`) : tr('Bo‘sh o‘rin yo‘q', 'Мест нет')}
                   </span>
                 </div>
                 <button type="button" className="btn-primary mt-5 !py-3" onClick={() => setApplyFor(club)} disabled={!free}>
@@ -251,14 +251,14 @@ export function ClubDetail() {
             </div>
           </div>
           <div className="card p-4 sm:p-6">
-            <h3 className="font-lato text-xl font-bold">Haftalik dars jadvali</h3>
+            <h3 className="font-lato text-xl font-bold">{tr('Haftalik dars jadvali', 'Расписание на неделю')}</h3>
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-              {['Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba'].map((d) => {
+              {WEEKDAYS.map((w, d) => {
                 const on = club.days.includes(d)
                 return (
-                  <div key={d} className={`rounded-xl p-3 text-center ${on ? 'bg-brand text-white' : 'bg-lilac-50 text-muted'}`}>
-                    <p className="text-sm font-bold">{d}</p>
-                    <p className="mt-1 text-xs">{on ? club.time : 'Dars yo‘q'}</p>
+                  <div key={w.uz} className={`rounded-xl p-3 text-center ${on ? 'bg-brand text-white' : 'bg-lilac-50 text-muted'}`}>
+                    <p className="text-sm font-bold">{L(w)}</p>
+                    <p className="mt-1 text-xs">{on ? club.time : tr('Dars yo‘q', 'Нет занятий')}</p>
                   </div>
                 )
               })}
@@ -266,7 +266,7 @@ export function ClubDetail() {
           </div>
           {similar.length > 0 && (
             <div>
-              <h3 className="mb-4 font-lato text-xl font-bold">O‘xshash to‘garaklar</h3>
+              <h3 className="mb-4 font-lato text-xl font-bold">{tr('O‘xshash to‘garaklar', 'Похожие кружки')}</h3>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {similar.map((c) => (
                   <ClubCard key={c.id} club={c} />
@@ -292,7 +292,7 @@ export function ClubDetail() {
             </ul>
           </div>
           <div className="card overflow-hidden">
-            <iframe title="Xarita" src={mapEmbed(club.lat, club.lng, 0.01)} className="h-56 w-full border-0" loading="lazy" />
+            <iframe title={tr('Xarita', 'Карта')} src={mapEmbed(club.lat, club.lng, 15)} className="h-56 w-full border-0" loading="lazy" />
             <a href={mapLink(club.lat, club.lng)} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 p-3 text-sm font-bold text-brand hover:bg-lilac-50">
               <MapPinned className="h-4 w-4" /> {t('onMap')}
             </a>
