@@ -125,6 +125,9 @@ export default function Footer() {
           <p>
             © {year} {tr('Andijon viloyati O‘quvchilar kengashi', 'Совет учащихся Андижанской области')}. {t('rights')}
           </p>
+          <p className="text-xs text-white/55">
+            Developer: <span className="font-semibold text-white/80">Elbek Turdiev</span>
+          </p>
         </div>
       </div>
     </footer>
