@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /cabinet
+Disallow: /reset-password
+
+Sitemap: https://www.oquvchilarkengashi.uz/sitemap.xml
